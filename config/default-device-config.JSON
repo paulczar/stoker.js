@@ -1,0 +1,7 @@
+{
+    "Name": "default",
+    "Host": "192.168.50.140",
+    "Interval": "60000",
+    "Cooker": "BGE",
+    "airportCode": "ATX"
+}

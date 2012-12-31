@@ -12,11 +12,14 @@ Right now it just displays Basic Temperature Gauges and a Chart showing Temp ove
 
 git clone
 npm install express
+npm install  underscore
 ./node server.js
 
 then point your browser to http://localhost:3000/dashboard.html?stoker=ip.add.of.stoker
 
-
+## Currently working on
+* save/load device configs.
+* tons of API stuff so I can move more functionality to the backend server.
 
 ## Todo
 

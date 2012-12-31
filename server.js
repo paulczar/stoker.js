@@ -8,18 +8,14 @@ var express = require('express')
 //  , user = require('./routes/user')
   , path = require('path')
   , api_stoker = require('./routes/api-stoker')
-  , view_stoker = require('./routes/view-stoker')
+  , api_config = require('./routes/api-config')
 
 var app = express();
 
-INTERVAL = 60000;
-
+util = require('util');
 http = require('http');
-
-if ("undefined" == typeof(FireStokerJSON)) {
-  FireStokerJSON = { "stoker":[], "info":{} };
-  FireStokerJSON.info.interval = INTERVAL;
-}
+fs = require('fs');
+_ = require('underscore');
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -37,22 +33,44 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+// App starts here ...  define some important objects and variables
+
+if ("undefined" == typeof(FireStokerJSON)) {
+  FireStokerJSON = { "stoker":[], "info":{} };
+  FireStokerJSON.info.interval = INTERVAL;
+}
+
+if ("undefined" == typeof(deviceSettings)) {
+  deviceSettings = api_config.default_settings;
+  console.log ("loading default settings");
+}
+
+INTERVAL = deviceSettings.Interval;
+
+// Routing for API-Stoker
 app.get('/api/stoker', api_stoker.displayFireStokerJSON);
-//app.get('/stoker', function (req,res) {
-//  res.send(FireStokerJSON);
-//});
 app.get('/api/stoker/reset', api_stoker.resetFireStokerJSON);
 app.get('/api/stoker/fetch', api_stoker.fetchStokerJSON);
-app.get('/api/stoker/set/interval/:interval', function(req,res) {
+app.get('/api/stoker/fetch/:hostName', api_stoker.fetchStokerJSON);
+app.get('/api/stoker/connect/:hostName', api_stoker.connectStoker);
+app.get('/api/stoker/config/interval/:interval', function(req,res) {
   FireStokerJSON.info.interval = req.params.interval;
   res.send({interval: req.params.interval});
 });
-app.get('/api/stoker/fetch/:hostName', api_stoker.fetchStokerJSON);
-app.get('/api/stoker/connect/:hostName', api_stoker.connectStoker);
 
-//app.get('/', view_stoker.mainPage);
-//app.get('/users', user.list);
+// Routing for API-Config
+app.get('/api/config', api_config.display);
+app.post('/api/config/set', api_config.set);
+app.get('/api/config/set/Name/:Name', api_config.set);
+app.get('/api/config/set/Host/:Host', api_config.set);
+app.get('/api/config/set/Interval/:Interval', api_config.set);
+app.get('/api/config/set/Cooker/:Cooker', api_config.set);
+app.get('/api/config/set/airportCode/:airportCode', api_config.set);
+app.get('/api/config/save/name/:name', api_config.save);
+app.get('/api/config/load/name/:name', api_config.load);
 
+
+// Sudo make me a server.
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
