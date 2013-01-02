@@ -1,3 +1,5 @@
+// API and functions specific to the Stoker and collecting data from it.
+
 exports.connectStoker = function(req, res) {
   FireStokerJSON.info.hostName = req.params.hostName;
   console.log("hostname set to " + FireStokerJSON.info.hostName)
@@ -30,10 +32,12 @@ exports.fetchStokerJSON = function(req,res) {
     // finished? ok, write the data to a file
     response.on('end', function() {
       console.log("data collected - " + jsonData);
-      jsObject = JSON.parse(jsonData);
+      var jsObject = JSON.parse(jsonData);
+      var Plugins = JSON.parse(jsonData);
+      readPlugins(Plugins);
       jsObject.stoker.timestamp = Date.now();
       // Uncomment below if we want to store the full object here.
-      //FireStokerJSON.stoker.push(jsObject.stoker);  
+      FireStokerJSON.stoker.push(jsObject.stoker);  
       res.send(jsObject);
     });
 
@@ -60,4 +64,28 @@ exports.resetFireStokerJSON = function(req,res) {
   FireStokerJSON = { "stoker":[], "info":{} };
   FireStokerJSON.info.interval = INTERVAL;
   res.send(FireStokerJSON);
+}
+
+readPlugins = function(data) {
+  //console.log('Reading Plugins: ');
+  //console.log("plugins found in config: \n" + util.inspect(deviceSettings.plugins));
+  _.each(data.stoker.sensors, function(val, key) {
+    if ( "undefined" ==  typeof(deviceSettings.plugins[data.stoker.sensors[key].id]) ) {
+      console.log("new sensor (" + data.stoker.sensors[key].id + ") found.  saving it into device object");
+      deviceSettings.plugins[data.stoker.sensors[key].id] = {
+        name   : data.stoker.sensors[key].name,
+        blower : data.stoker.sensors[key].blower,
+        type   : "sensors"
+      };
+    }
+  });
+  _.each(data.stoker.blowers, function(val, key) {
+    if ( "undefined" ==  typeof( deviceSettings.plugins[data.stoker.blowers[key].id]) ) {
+      console.log("new blower (" + data.stoker.blowers[key].id + ") found.  saving it into device object");
+      deviceSettings.plugins[data.stoker.blowers[key].id] = {
+        name : data.stoker.blowers[key].name,
+        type : "blowers"
+      };
+    }
+  });
 }

@@ -9,6 +9,7 @@ var express = require('express')
   , path = require('path')
   , api_stoker = require('./routes/api-stoker')
   , api_config = require('./routes/api-config')
+  , api_cook = require('./routes/api-cook')
 
 var app = express();
 
@@ -35,17 +36,24 @@ app.configure('development', function(){
 
 // App starts here ...  define some important objects and variables
 
+if ("undefined" == typeof(deviceSettings)) {
+  deviceSettings = api_config.default_settings;
+  console.log ("loading default device settings");
+}
+
+if ("undefined" == typeof(cook)) {
+  cook = api_cook.default_cook;
+  console.log("loaded default cook");
+}
+
+
+INTERVAL = deviceSettings.Interval;
+
 if ("undefined" == typeof(FireStokerJSON)) {
   FireStokerJSON = { "stoker":[], "info":{} };
   FireStokerJSON.info.interval = INTERVAL;
 }
 
-if ("undefined" == typeof(deviceSettings)) {
-  deviceSettings = api_config.default_settings;
-  console.log ("loading default settings");
-}
-
-INTERVAL = deviceSettings.Interval;
 
 // Routing for API-Stoker
 app.get('/api/stoker', api_stoker.displayFireStokerJSON);
@@ -61,6 +69,7 @@ app.get('/api/stoker/config/interval/:interval', function(req,res) {
 // Routing for API-Config
 app.get('/api/config', api_config.display);
 app.post('/api/config/set', api_config.set);
+app.get('/api/config/set/plugin/:serial/name/:name', api_config.set);
 app.get('/api/config/set/Name/:Name', api_config.set);
 app.get('/api/config/set/Host/:Host', api_config.set);
 app.get('/api/config/set/Interval/:Interval', api_config.set);

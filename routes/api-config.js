@@ -1,3 +1,5 @@
+// API and functions specific to the configuration of the device (Stoker) 
+
 var default_settings = 
 {
     Name: "default",
@@ -5,11 +7,12 @@ var default_settings =
     Interval: "60000",
     Cooker: "BGE - Large",
     airportCode: "ATX",
-    Type: "stoker"
+    Type: "stoker",
+    plugins: {}
 }
 
 exports.display=function(req,res) {
-    res.send(exports.stoker.settings);
+    res.send(deviceSettings);
 }
 
 exports.set=function(req,res) {
@@ -26,6 +29,12 @@ exports.set=function(req,res) {
         deviceSettings.Cooker = req.params.Cooker;
       } else if ( req.params.airportCode ) {
         deviceSettings.airportCode = req.params.airportCode;
+      } else if ( ( req.params.serial ) && ( req.params.name ) ) {
+        if ( "undefined" !=  typeof(deviceSettings.plugins[req.params.serial])) {
+          deviceSettings.plugins[req.params.serial].name = req.params.name;
+        } else {
+          res.send([{result: "FAIL"}, {reason: "No plugin with that serial number found."}]);  
+        }
       } else {
         res.send([{result: "FAIL"}, req.params]);
       }
