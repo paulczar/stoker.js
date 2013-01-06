@@ -36,18 +36,32 @@ app.configure('development', function(){
 
 // App starts here ...  define some important objects and variables
 
+// Session object contains an array of all the current sessions and their objects.
+// This will allow a single server to host multiple devices / cooks / etc in future.
+// right now everyone will just be under session[0];
+
+session = 
+[{
+  user: "default",
+  deviceSettings: {},
+  cook: {},
+  lastCookerOutput: {},
+}];
+
+currentSession = 0;
+
 if ("undefined" == typeof(deviceSettings)) {
-  deviceSettings = api_config.default_settings;
+  session[currentSession].deviceSettings = api_config.default_settings;
   console.log ("loading default device settings");
 }
 
 if ("undefined" == typeof(cook)) {
-  cook = api_cook.default_cook;
+  session[currentSession].cook = api_cook.default_cook;
   console.log("loaded default cook");
 }
 
 
-INTERVAL = deviceSettings.Interval;
+INTERVAL = session[currentSession].deviceSettings.Interval;
 
 if ("undefined" == typeof(FireStokerJSON)) {
   FireStokerJSON = { "stoker":[], "info":{} };
@@ -75,9 +89,16 @@ app.get('/api/config/set/Host/:Host', api_config.set);
 app.get('/api/config/set/Interval/:Interval', api_config.set);
 app.get('/api/config/set/Cooker/:Cooker', api_config.set);
 app.get('/api/config/set/airportCode/:airportCode', api_config.set);
-app.get('/api/config/save/name/:name', api_config.save);
-app.get('/api/config/load/name/:name', api_config.load);
+app.get('/api/config/save/:name', api_config.save);
+app.get('/api/config/load/:name', api_config.load);
 
+// Routing for API-Cook
+app.get('/api/cook', api_cook.display);
+app.get('/api/cook/save/:name', api_cook.save);
+app.get('/api/cook/load/:name', api_cook.load);
+app.get('/api/start', api_cook.start);
+app.get('/api/pause', api_cook.pause);
+app.get('/api/finish', api_cook.finish);
 
 // Sudo make me a server.
 http.createServer(app).listen(app.get('port'), function(){

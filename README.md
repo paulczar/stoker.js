@@ -8,12 +8,20 @@ Currently uses twitter bootstrap and highcharts to render the interface.
 
 Right now it just displays Basic Temperature Gauges and a Chart showing Temp over time.   needs moar!
 
+Also provided is a fake stoker so that I can dev without needing to keep the stoker on.  
+
 ## Install & Run
 
 git clone
 npm install express
 npm install  underscore
-./node server.js
+
+__Stoker API__
+node server.js
+
+__Fake Stoker__
+node fake-stoker.js
+
 
 then point your browser to http://localhost:3000/dashboard.html?stoker=ip.add.of.stoker
 

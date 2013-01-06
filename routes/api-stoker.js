@@ -17,6 +17,12 @@ exports.fetchStokerJSON = function(req,res) {
     console.log("no hostname set");
     return;
   }
+  getOutputFromStoker(hostName, function() {
+    res.send(session[currentSession].lastCookerOutput);
+  });
+}
+
+exports.getOutputFromStoker = function(hostName) {
   var options = {
     host: hostName,
     path: '/stoker.json',
@@ -37,7 +43,8 @@ exports.fetchStokerJSON = function(req,res) {
       readPlugins(Plugins);
       jsObject.stoker.timestamp = Date.now();
       // Uncomment below if we want to store the full object here.
-      FireStokerJSON.stoker.push(jsObject.stoker);  
+      //FireStokerJSON.stoker.push(jsObject.stoker);  
+      session[currentSession].lastCookerOutput = jsObject;
       res.send(jsObject);
     });
 
@@ -68,11 +75,11 @@ exports.resetFireStokerJSON = function(req,res) {
 
 readPlugins = function(data) {
   //console.log('Reading Plugins: ');
-  //console.log("plugins found in config: \n" + util.inspect(deviceSettings.plugins));
+  //console.log("plugins found in config: \n" + util.inspect(session[currentSession].deviceSettings.plugins));
   _.each(data.stoker.sensors, function(val, key) {
-    if ( "undefined" ==  typeof(deviceSettings.plugins[data.stoker.sensors[key].id]) ) {
+    if ( "undefined" ==  typeof(session[currentSession].deviceSettings.plugins[data.stoker.sensors[key].id]) ) {
       console.log("new sensor (" + data.stoker.sensors[key].id + ") found.  saving it into device object");
-      deviceSettings.plugins[data.stoker.sensors[key].id] = {
+      session[currentSession].deviceSettings.plugins[data.stoker.sensors[key].id] = {
         name   : data.stoker.sensors[key].name,
         blower : data.stoker.sensors[key].blower,
         type   : "sensors"
@@ -80,9 +87,9 @@ readPlugins = function(data) {
     }
   });
   _.each(data.stoker.blowers, function(val, key) {
-    if ( "undefined" ==  typeof( deviceSettings.plugins[data.stoker.blowers[key].id]) ) {
+    if ( "undefined" ==  typeof( session[currentSession].deviceSettings.plugins[data.stoker.blowers[key].id]) ) {
       console.log("new blower (" + data.stoker.blowers[key].id + ") found.  saving it into device object");
-      deviceSettings.plugins[data.stoker.blowers[key].id] = {
+      session[currentSession].deviceSettings.plugins[data.stoker.blowers[key].id] = {
         name : data.stoker.blowers[key].name,
         type : "blowers"
       };
